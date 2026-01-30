@@ -5,7 +5,7 @@ use std::{
   path::Path,
 };
 
-use windows::Win32::Foundation::{CloseHandle, ERROR_MORE_DATA, HANDLE};
+use windows::Win32::Foundation::{CloseHandle, ERROR_MORE_DATA, HANDLE, HRESULT_FROM_WIN32};
 use windows::Win32::Storage::FileSystem::{
   CreateFileW, FILE_ATTRIBUTE_NORMAL, FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ,
   FILE_SHARE_WRITE, GetDiskFreeSpaceW, GetVolumeNameForVolumeMountPointW, GetVolumePathNameW,
@@ -16,7 +16,7 @@ use windows::Win32::System::Ioctl::{
   IOCTL_STORAGE_QUERY_PROPERTY, PropertyStandardQuery, STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR,
   STORAGE_PROPERTY_QUERY, StorageAccessAlignmentProperty,
 };
-use windows::core::{PCWSTR, PWSTR};
+use windows::core::PCWSTR;
 
 use super::DirectInfo;
 
@@ -47,29 +47,22 @@ fn get_volume_path(path: &Path) -> io::Result<Vec<u16>> {
   let mut buffer = vec![0u16; 260];
 
   loop {
-    let ok = unsafe {
-      GetVolumePathNameW(
-        PCWSTR(path_wide.as_ptr()),
-        PWSTR(buffer.as_mut_ptr()),
-        buffer.len() as u32,
-      )
-    }
-    .as_bool();
+    let res = unsafe { GetVolumePathNameW(PCWSTR(path_wide.as_ptr()), &mut buffer) };
 
-    if ok {
+    if res.is_ok() {
       let len = wide_len(&buffer);
       buffer.truncate(len);
       buffer.push(0);
       return Ok(buffer);
     }
 
-    let err = io::Error::last_os_error();
-    if err.raw_os_error() == Some(ERROR_MORE_DATA.0 as i32) {
+    let err = res.unwrap_err();
+    if err.code() == HRESULT_FROM_WIN32(ERROR_MORE_DATA.0) {
       buffer.resize(buffer.len() * 2, 0);
       continue;
     }
 
-    return Err(err);
+    return Err(io::Error::last_os_error());
   }
 }
 
@@ -77,29 +70,23 @@ fn get_volume_name(volume_path: &[u16]) -> io::Result<Vec<u16>> {
   let mut buffer = vec![0u16; 260];
 
   loop {
-    let ok = unsafe {
-      GetVolumeNameForVolumeMountPointW(
-        PCWSTR(volume_path.as_ptr()),
-        PWSTR(buffer.as_mut_ptr()),
-        buffer.len() as u32,
-      )
-    }
-    .as_bool();
+    let res =
+      unsafe { GetVolumeNameForVolumeMountPointW(PCWSTR(volume_path.as_ptr()), &mut buffer) };
 
-    if ok {
+    if res.is_ok() {
       let len = wide_len(&buffer);
       buffer.truncate(len);
       buffer.push(0);
       return Ok(buffer);
     }
 
-    let err = io::Error::last_os_error();
-    if err.raw_os_error() == Some(ERROR_MORE_DATA.0 as i32) {
+    let err = res.unwrap_err();
+    if err.code() == HRESULT_FROM_WIN32(ERROR_MORE_DATA.0) {
       buffer.resize(buffer.len() * 2, 0);
       continue;
     }
 
-    return Err(err);
+    return Err(io::Error::last_os_error());
   }
 }
 
@@ -109,18 +96,17 @@ fn get_logical_block_size(volume_path: &[u16]) -> io::Result<u32> {
   let mut free_clusters = 0u32;
   let mut total_clusters = 0u32;
 
-  let ok = unsafe {
+  let res = unsafe {
     GetDiskFreeSpaceW(
       PCWSTR(volume_path.as_ptr()),
-      &mut sectors_per_cluster,
-      &mut bytes_per_sector,
-      &mut free_clusters,
-      &mut total_clusters,
+      Some(&mut sectors_per_cluster as *mut u32),
+      Some(&mut bytes_per_sector as *mut u32),
+      Some(&mut free_clusters as *mut u32),
+      Some(&mut total_clusters as *mut u32),
     )
-  }
-  .as_bool();
+  };
 
-  if ok {
+  if res.is_ok() {
     Ok(bytes_per_sector)
   } else {
     Err(io::Error::last_os_error())
@@ -172,7 +158,7 @@ fn query_alignment(handle: HANDLE) -> io::Result<STORAGE_ACCESS_ALIGNMENT_DESCRI
   let mut desc: STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR = unsafe { mem::zeroed() };
   let mut bytes_returned = 0u32;
 
-  let ok = unsafe {
+  let res = unsafe {
     DeviceIoControl(
       handle,
       IOCTL_STORAGE_QUERY_PROPERTY,
@@ -180,13 +166,12 @@ fn query_alignment(handle: HANDLE) -> io::Result<STORAGE_ACCESS_ALIGNMENT_DESCRI
       mem::size_of::<STORAGE_PROPERTY_QUERY>() as u32,
       Some(&mut desc as *mut _ as *mut c_void),
       mem::size_of::<STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR>() as u32,
-      Some(&mut bytes_returned),
+      Some(&mut bytes_returned as *mut u32),
       None,
     )
-  }
-  .as_bool();
+  };
 
-  if ok {
+  if res.is_ok() {
     Ok(desc)
   } else {
     Err(io::Error::last_os_error())
