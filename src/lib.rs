@@ -1,18 +1,4 @@
-//! Query direct I/O alignment requirements for a path.
-//!
-//! ## Example
-//! ```no_run
-//! # use dio_align::fetch;
-//! # fn main() -> std::io::Result<()> {
-//! let info = fetch("/tmp")?;
-//! println!("logical: {}", info.logical_block_size());
-//! println!("physical: {}", info.physical_block_size());
-//! if let Some(mem_align) = info.mem_align() {
-//!   println!("mem align: {}", mem_align);
-//! }
-//! # Ok(())
-//! # }
-//! ```
+#![doc = include_str!("../README.md")]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, allow(unused_attributes))]
 #![deny(missing_docs)]
