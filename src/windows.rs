@@ -5,7 +5,7 @@ use std::{
   path::Path,
 };
 
-use windows::Win32::Foundation::{CloseHandle, ERROR_MORE_DATA, HANDLE, HRESULT_FROM_WIN32};
+use windows::Win32::Foundation::{CloseHandle, ERROR_MORE_DATA, HANDLE};
 use windows::Win32::Storage::FileSystem::{
   CreateFileW, FILE_ATTRIBUTE_NORMAL, FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ,
   FILE_SHARE_WRITE, GetDiskFreeSpaceW, GetVolumeNameForVolumeMountPointW, GetVolumePathNameW,
@@ -56,13 +56,13 @@ fn get_volume_path(path: &Path) -> io::Result<Vec<u16>> {
       return Ok(buffer);
     }
 
-    let err = res.unwrap_err();
-    if err.code() == HRESULT_FROM_WIN32(ERROR_MORE_DATA.0) {
+    let err = io::Error::last_os_error();
+    if err.raw_os_error() == Some(ERROR_MORE_DATA.0 as i32) {
       buffer.resize(buffer.len() * 2, 0);
       continue;
     }
 
-    return Err(io::Error::last_os_error());
+    return Err(err);
   }
 }
 
@@ -80,13 +80,13 @@ fn get_volume_name(volume_path: &[u16]) -> io::Result<Vec<u16>> {
       return Ok(buffer);
     }
 
-    let err = res.unwrap_err();
-    if err.code() == HRESULT_FROM_WIN32(ERROR_MORE_DATA.0) {
+    let err = io::Error::last_os_error();
+    if err.raw_os_error() == Some(ERROR_MORE_DATA.0 as i32) {
       buffer.resize(buffer.len() * 2, 0);
       continue;
     }
 
-    return Err(io::Error::last_os_error());
+    return Err(err);
   }
 }
 
@@ -135,7 +135,7 @@ fn open_volume(device_path: &[u16]) -> io::Result<Handle> {
   let handle = unsafe {
     CreateFileW(
       PCWSTR(device_path.as_ptr()),
-      FILE_GENERIC_READ,
+      FILE_GENERIC_READ.0,
       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
       None,
       OPEN_EXISTING,
