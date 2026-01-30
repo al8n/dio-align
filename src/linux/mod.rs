@@ -1,4 +1,7 @@
-use rustix::{fs::{open, OFlags, Mode}, io::read};
+use rustix::{
+  fs::{Mode, OFlags, open},
+  io::read,
+};
 
 use std::{io, path::Path};
 
@@ -24,10 +27,10 @@ fn read_block_size<P: AsRef<Path>>(path: P) -> io::Result<u32> {
   let fd = open(path.as_ref().as_os_str(), OFlags::RDONLY, Mode::empty())?;
   let mut buf = [0; 64];
   let num = read(&fd, &mut buf)?;
-  let size = core::str::from_utf8(&buf[..num]).map_err(|e| {
-    io::Error::new(io::ErrorKind::InvalidData, e)
-  })?;
-  size.trim().parse().map_err(|e| {
-    io::Error::new(io::ErrorKind::InvalidData, e)
-  })
+  let size =
+    core::str::from_utf8(&buf[..num]).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+  size
+    .trim()
+    .parse()
+    .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
 }

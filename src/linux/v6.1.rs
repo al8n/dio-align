@@ -6,7 +6,10 @@ use smol_str::format_smolstr;
 
 use std::{fs::OpenOptions, io, path::Path};
 
-use super::{super::DirectInfo, read_block_size, PHYSICAL_BLOCK_SIZE_FILE_NAME, BLOCK_PATH, ABS_BLOCK_PATH, QUEUE_PATH};
+use super::{
+  super::DirectInfo, ABS_BLOCK_PATH, BLOCK_PATH, PHYSICAL_BLOCK_SIZE_FILE_NAME, QUEUE_PATH,
+  read_block_size,
+};
 
 /// Fetch direct I/O information
 pub fn fetch<P: AsRef<Path>>(path: P) -> io::Result<DirectInfo> {
@@ -67,14 +70,21 @@ pub fn fetch<P: AsRef<Path>>(path: P) -> io::Result<DirectInfo> {
     let physical_blk_path = queue.join(PHYSICAL_BLOCK_SIZE_FILE_NAME);
     if physical_blk_path.exists() {
       let physical_blk_size = read_block_size(&physical_blk_path).unwrap_or(logical_blk_size);
-      return Ok(DirectInfo::new(mem_align, logical_blk_size, physical_blk_size));
+      return Ok(DirectInfo::new(
+        mem_align,
+        logical_blk_size,
+        physical_blk_size,
+      ));
     }
 
     match current.parent() {
       Some(p) if p.file_name().is_some_and(|n| n.ne(BLOCK_PATH)) => current = p.to_path_buf(),
       _ => {
-        return Err(io::Error::new(io::ErrorKind::Unsupported, "cannot find the physical block size information"))
-      },
+        return Err(io::Error::new(
+          io::ErrorKind::Unsupported,
+          "cannot find the physical block size information",
+        ));
+      }
     }
   }
 }

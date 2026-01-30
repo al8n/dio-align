@@ -44,12 +44,7 @@ pub struct DirectInfo {
 
 impl DirectInfo {
   #[inline]
-  const fn new(
-    #[cfg(linux_kernel_6_1)]
-    mem_align: u32,
-    logical: u32,
-    physical: u32,
-  ) -> Self {
+  const fn new(#[cfg(linux_kernel_6_1)] mem_align: u32, logical: u32, physical: u32) -> Self {
     Self {
       #[cfg(linux_kernel_6_1)]
       mem_align,
@@ -59,7 +54,7 @@ impl DirectInfo {
   }
 
   /// Returns the memory alignment
-  /// 
+  ///
   /// This is only available on Linux with kernel version `>= 6.1`
   #[cfg_attr(not(tarpaulin), inline(always))]
   #[cfg(linux_kernel_6_1)]
@@ -80,7 +75,6 @@ impl DirectInfo {
     self.physical
   }
 }
-
 
 #[test]
 fn test_direct_info() {

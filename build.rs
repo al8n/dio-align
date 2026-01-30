@@ -28,7 +28,7 @@ fn main() {
   match env::var("CARGO_CFG_TARGET_OS").as_deref() {
     Ok("linux") => check_kernel(),
     Ok("macos" | "ios" | "tvos" | "watchos" | "visionos") => use_feature("apple"),
-    _ => {},
+    _ => {}
   }
 
   // Rerun this script if any of our features or configuration flags change,

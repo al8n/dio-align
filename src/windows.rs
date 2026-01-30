@@ -1,23 +1,22 @@
 use std::{
-  ffi::{c_void, OsStr},
-  io,
-  mem,
+  ffi::{OsStr, c_void},
+  io, mem,
   os::windows::ffi::OsStrExt,
   path::Path,
 };
 
-use windows::core::{PCWSTR, PWSTR};
 use windows::Win32::Foundation::{CloseHandle, ERROR_MORE_DATA, HANDLE};
 use windows::Win32::Storage::FileSystem::{
-  CreateFileW, GetDiskFreeSpaceW, GetVolumeNameForVolumeMountPointW, GetVolumePathNameW,
-  FILE_ATTRIBUTE_NORMAL, FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE,
+  CreateFileW, FILE_ATTRIBUTE_NORMAL, FILE_GENERIC_READ, FILE_SHARE_DELETE, FILE_SHARE_READ,
+  FILE_SHARE_WRITE, GetDiskFreeSpaceW, GetVolumeNameForVolumeMountPointW, GetVolumePathNameW,
   OPEN_EXISTING,
 };
 use windows::Win32::System::IO::DeviceIoControl;
 use windows::Win32::System::Ioctl::{
-  IOCTL_STORAGE_QUERY_PROPERTY, PropertyStandardQuery, StorageAccessAlignmentProperty,
-  STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR, STORAGE_PROPERTY_QUERY,
+  IOCTL_STORAGE_QUERY_PROPERTY, PropertyStandardQuery, STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR,
+  STORAGE_PROPERTY_QUERY, StorageAccessAlignmentProperty,
 };
+use windows::core::{PCWSTR, PWSTR};
 
 use super::DirectInfo;
 
