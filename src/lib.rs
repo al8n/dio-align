@@ -88,7 +88,11 @@ fn test_direct_info() {
     info.physical_block_size()
   );
   assert!(info.logical_block_size().is_power_of_two());
+
+  #[cfg(not(apple))]
   assert!(info.physical_block_size().is_power_of_two());
+
+  assert!(info.physical_block_size() % 2 == 0);
 
   #[cfg(linux_kernel_6_1)]
   {
