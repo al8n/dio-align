@@ -134,4 +134,4 @@ jobs:
         path: ~/.cargo
         key: ${{ runner.os }}-coverage-dotcargo
     - name: Run test
-      run: cargo test --all-features -- --no-capture
+      run: cargo test --all-features -- --nocapture

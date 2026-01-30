@@ -1,22 +1,18 @@
 [package]
 name = "dio-align"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2024"
 repository = "https://github.com/al8n/dio-align"
 homepage = "https://github.com/al8n/dio-align"
 documentation = "https://docs.rs/dio-align"
-description = "A template for creating Rust open-source repo on GitHub"
+description = "Query direct I/O alignment requirements for a filesystem path."
 license = "MIT OR Apache-2.0"
 rust-version = "1.85"
-
-[[bench]]
-path = "benches/foo.rs"
-name = "foo"
-harness = false
+keywords = ["direct-io", "alignment", "dio", "block-alignment"]
+categories = ["filesystem", "development-tools"]
 
 [features]
 default = []
-
 
 [dependencies]
 rustix = { version = "1", default-features = false, features = ["fs", "std"] }

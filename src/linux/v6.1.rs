@@ -11,7 +11,7 @@ use super::{
   read_block_size,
 };
 
-/// Fetch direct I/O information
+/// Fetch direct I/O alignment information for a path.
 pub fn fetch<P: AsRef<Path>>(path: P) -> io::Result<DirectInfo> {
   let path = path.as_ref();
   let abs = path.canonicalize()?;

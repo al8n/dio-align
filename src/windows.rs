@@ -206,7 +206,7 @@ fn get_physical_block_size(volume_path: &[u16]) -> io::Result<Option<u32>> {
   Ok(Some(desc.BytesPerPhysicalSector))
 }
 
-/// Fetch direct I/O information
+/// Fetch direct I/O alignment information for a path.
 pub fn fetch<P: AsRef<Path>>(path: P) -> io::Result<DirectInfo> {
   let volume_path = get_volume_path(path.as_ref())?;
   let logical_size = get_logical_block_size(&volume_path)?;

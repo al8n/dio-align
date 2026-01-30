@@ -12,7 +12,7 @@ use super::{
 
 const LOGICAL_BLOCK_SIZE_FILE_NAME: &str = "logical_block_size";
 
-/// Fetch direct I/O information
+/// Fetch direct I/O alignment information for a path.
 pub fn fetch<P: AsRef<Path>>(path: P) -> io::Result<DirectInfo> {
   let path = path.as_ref();
   let fd = open(path.as_os_str(), OFlags::RDONLY, Mode::empty())?;

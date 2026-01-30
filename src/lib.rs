@@ -1,4 +1,18 @@
-//! A template for creating Rust open-source repo on GitHub
+//! Query direct I/O alignment requirements for a path.
+//!
+//! ## Example
+//! ```no_run
+//! # use dio_align::fetch;
+//! # fn main() -> std::io::Result<()> {
+//! let info = fetch("/tmp")?;
+//! println!("logical: {}", info.logical_block_size());
+//! println!("physical: {}", info.physical_block_size());
+//! if let Some(mem_align) = info.mem_align() {
+//!   println!("mem align: {}", mem_align);
+//! }
+//! # Ok(())
+//! # }
+//! ```
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, allow(unused_attributes))]
 #![deny(missing_docs)]
@@ -33,7 +47,7 @@ mod os;
 ))]
 pub use os::*;
 
-/// The information of the direct I/O
+/// Direct I/O alignment information for a filesystem path.
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct DirectInfo {
   #[cfg(linux_kernel_6_1)]
@@ -53,9 +67,9 @@ impl DirectInfo {
     }
   }
 
-  /// Returns the memory alignment
+  /// Returns the required memory alignment in bytes, if available.
   ///
-  /// This is only available on Linux with kernel version `>= 6.1`
+  /// On Linux this uses `statx(DIOALIGN)` for kernels `>= 6.1`.
   #[cfg_attr(not(tarpaulin), inline(always))]
   #[cfg(linux_kernel_6_1)]
   #[cfg_attr(docsrs, doc(cfg(linux_kernel_6_1)))]
@@ -63,13 +77,13 @@ impl DirectInfo {
     self.mem_align
   }
 
-  /// Returns the logical block size
+  /// Returns the logical block size in bytes.
   #[cfg_attr(not(tarpaulin), inline(always))]
   pub const fn logical_block_size(&self) -> u32 {
     self.logical
   }
 
-  /// Returns the physical block size
+  /// Returns the physical block size in bytes.
   #[cfg_attr(not(tarpaulin), inline(always))]
   pub const fn physical_block_size(&self) -> u32 {
     self.physical
@@ -95,8 +109,5 @@ fn test_direct_info() {
   assert!(info.physical_block_size() % 2 == 0);
 
   #[cfg(linux_kernel_6_1)]
-  {
-    println!("mem align: {}", info.mem_align());
-    assert!(info.mem_align().is_power_of_two());
-  }
+  assert!(info.mem_align().is_power_of_two());
 }
