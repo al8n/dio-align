@@ -1,13 +1,13 @@
 [package]
-name = "template-rs"
+name = "dio-align"
 version = "0.0.0"
-edition = "2021"
-repository = "https://github.com/al8n/template-rs"
-homepage = "https://github.com/al8n/template-rs"
-documentation = "https://docs.rs/template-rs"
+edition = "2024"
+repository = "https://github.com/al8n/dio-align"
+homepage = "https://github.com/al8n/dio-align"
+documentation = "https://docs.rs/dio-align"
 description = "A template for creating Rust open-source repo on GitHub"
 license = "MIT OR Apache-2.0"
-rust-version = "1.73"
+rust-version = "1.85"
 
 [[bench]]
 path = "benches/foo.rs"
@@ -15,14 +15,25 @@ name = "foo"
 harness = false
 
 [features]
-default = ["std"]
-alloc = []
-std = []
+default = []
+
 
 [dependencies]
+rustix = { version = "1", default-features = false, features = ["fs", "std"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+smol_str = { version = "0.3", default-features = false }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62", features = [
+  "Win32_Foundation",
+  "Win32_Storage_FileSystem",
+  "Win32_System_IO",
+  "Win32_System_Ioctl",
+  "Win32_Security",
+] }
 
 [dev-dependencies]
-criterion = "0.8"
 tempfile = "3"
 
 [profile.bench]
@@ -45,4 +56,6 @@ single_use_lifetimes = "warn"
 unexpected_cfgs = { level = "warn", check-cfg = [
   'cfg(all_tests)',
   'cfg(tarpaulin)',
+  'cfg(linux_kernel_6_1)',
+  'cfg(apple)',
 ] }
